@@ -1,0 +1,11 @@
+Debug/
+ipch/
+x64/
+MySerial.sdf
+MySerial.VC.db
+MySerial/Debug/
+MySerial/x64/
+.vs/
+MySerial/MySerial.aps
+
+
