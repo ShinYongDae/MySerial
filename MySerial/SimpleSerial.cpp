@@ -161,10 +161,10 @@ void CSimpleSerial::StartThread()
 {
 	m_bEndThreadState = FALSE;
 	m_bAliveThread = TRUE;
-	t1 = std::thread(funcReceive, this);
+	t1 = std::thread(thrdReceive, this);
 }
 
-void CSimpleSerial::funcReceive(const LPVOID lpContext)
+void CSimpleSerial::thrdReceive(const LPVOID lpContext)
 {
 	CSimpleSerial* pSimpleSerial = reinterpret_cast<CSimpleSerial*>(lpContext);
 

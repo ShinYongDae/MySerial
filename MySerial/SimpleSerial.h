@@ -23,6 +23,8 @@ class CSimpleSerial : public CWnd
 	void StringToTChar(CString str, TCHAR* tszStr);
 	CString CharToString(char *szStr);
 	void StartThread();
+	void StopThread();
+	void ClearReadBuffer();
 
 public:
 	CSimpleSerial(CWnd* pParent, BYTE ComPort, DWORD BaudRate, BYTE ByteSize = 8, BYTE Parity = 0, BYTE StopBits = ONESTOPBIT);
@@ -34,15 +36,14 @@ public:
 
 	BOOL SetCommunicationTimeouts(DWORD ReadIntervalTimeout=0, DWORD ReadTotalTimeoutMultiplier=0, DWORD ReadTotalTimeoutConstant=0, DWORD WriteTotalTimeoutMultiplier=0, DWORD WriteTotalTimeoutConstant=0);
 
-	static void funcReceive(const LPVOID lpContext);
+	static void thrdReceive(const LPVOID lpContext);
 	BOOL Send(CString sSend);
-	BOOL IsAliveThread();
-	void StopThread();
+	BOOL IsConnected();
+
+protected:
 	void EndThread();
 	BOOL Receive();
-
-	void ClearReadBuffer();
-	BOOL IsConnected();
+	BOOL IsAliveThread();
 
 protected:
 	DECLARE_MESSAGE_MAP()
