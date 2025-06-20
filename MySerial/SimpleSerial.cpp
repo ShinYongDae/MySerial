@@ -14,7 +14,7 @@ CSimpleSerial::CSimpleSerial(CWnd* pParent, BYTE ComPort, DWORD BaudRate, BYTE B
 {
 	m_pParent = pParent;
 	if (pParent)
-		m_hParentWnd = pParent->GetSafeHwnd();
+		m_hParent = pParent->GetSafeHwnd();
 
 	m_bPortReady = FALSE;
 	m_pReadBuffer = new char[BUFSIZE];
@@ -77,7 +77,7 @@ CSimpleSerial::CSimpleSerial(CWnd* pParent, BYTE ComPort, DWORD BaudRate, BYTE B
 		return;
 	}
 
-	StartThread();
+	ThreadStart();
 }
 
 CSimpleSerial::~CSimpleSerial()
@@ -90,7 +90,7 @@ CSimpleSerial::~CSimpleSerial()
 		CloseHandle(m_hComm);
 	}
 
-	StopThread();
+	ThreadStop();
 	Sleep(30);
 	t1.join();
 
@@ -157,27 +157,27 @@ BOOL CSimpleSerial::Send(CString sSend)
 */
 }
 
-void CSimpleSerial::StartThread()
+void CSimpleSerial::ThreadStart()
 {
-	m_bEndThreadState = FALSE;
-	m_bAliveThread = TRUE;
-	t1 = std::thread(thrdReceive, this);
+	m_bThreadStateEnd = FALSE;
+	m_bThreadAlive = TRUE;
+	t1 = std::thread(ProcThrd, this);
 }
 
-void CSimpleSerial::thrdReceive(const LPVOID lpContext)
+void CSimpleSerial::ProcThrd(const LPVOID lpContext)
 {
 	CSimpleSerial* pSimpleSerial = reinterpret_cast<CSimpleSerial*>(lpContext);
 
-	while (pSimpleSerial->IsAliveThread())
+	while (pSimpleSerial->ThreadIsAlive())
 	{
-		if (!pSimpleSerial->Receive())
+		if (!pSimpleSerial->ProcReceive())
 			break;
 	}
 
-	pSimpleSerial->EndThread();
+	pSimpleSerial->ThreadEnd();
 }
 
-BOOL CSimpleSerial::Receive()
+BOOL CSimpleSerial::ProcReceive()
 {
 	ClearReadBuffer();
 
@@ -195,7 +195,7 @@ BOOL CSimpleSerial::Receive()
 			memcpy(m_pReadBuffer, buffer, dwBytesTransferred);
 			m_pReadBuffer[dwBytesTransferred] = _T('\0');
 			CString sMsg = CharToString(m_pReadBuffer);
-			::SendMessage(m_hParentWnd, WM_SERIAL_RECEIVED, (WPARAM)0, (LPARAM)(LPCTSTR)sMsg);
+			::SendMessage(m_hParent, WM_SERIAL_RECEIVED, (WPARAM)0, (LPARAM)(LPCTSTR)sMsg);
 			//if (dwBytesTransferred == dwLength)
 			//	return TRUE;
 			//else
@@ -216,19 +216,19 @@ BOOL CSimpleSerial::Receive()
 	return TRUE;
 }
 
-BOOL CSimpleSerial::IsAliveThread()
+BOOL CSimpleSerial::ThreadIsAlive()
 {
-	return m_bAliveThread;
+	return m_bThreadAlive;
 }
 
-void CSimpleSerial::StopThread()
+void CSimpleSerial::ThreadStop()
 {
-	m_bAliveThread = FALSE;
+	m_bThreadAlive = FALSE;
 	MSG message;
 	const DWORD dwTimeOut = 1000 * 60 * 3; // 3 Minute
 	DWORD dwStartTick = GetTickCount();
 	Sleep(30);
-	while (!m_bEndThreadState)
+	while (!m_bThreadStateEnd)
 	{
 		if (GetTickCount() >= (dwStartTick + dwTimeOut))
 		{
@@ -244,9 +244,9 @@ void CSimpleSerial::StopThread()
 	}
 }
 
-void CSimpleSerial::EndThread()
+void CSimpleSerial::ThreadEnd()
 {
-	m_bEndThreadState = TRUE;
+	m_bThreadStateEnd = TRUE;
 }
 
 
@@ -257,7 +257,7 @@ void CSimpleSerial::ClearReadBuffer()
 
 BOOL CSimpleSerial::IsConnected()
 {
-	return (!m_bEndThreadState);
+	return (!m_bThreadStateEnd);
 }
 
 void CSimpleSerial::StringToChar(CString str, char* szStr)  // char* returned must be deleted... 

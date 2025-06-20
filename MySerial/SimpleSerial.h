@@ -16,34 +16,34 @@ class CSimpleSerial : public CWnd
 	COMMTIMEOUTS	m_CommTimeouts;
 
 	CWnd* m_pParent;
-	BOOL m_bAliveThread, m_bEndThreadState;
+	HWND m_hParent;
+	BOOL m_bThreadAlive, m_bThreadStateEnd;
 	std::thread t1;
 
 	void StringToChar(CString str, char* szStr);
 	void StringToTChar(CString str, TCHAR* tszStr);
 	CString CharToString(char *szStr);
-	void StartThread();
-	void StopThread();
+	void ThreadStart();
+	void ThreadStop();
 	void ClearReadBuffer();
 
 public:
 	CSimpleSerial(CWnd* pParent, BYTE ComPort, DWORD BaudRate, BYTE ByteSize = 8, BYTE Parity = 0, BYTE StopBits = ONESTOPBIT);
 	virtual ~CSimpleSerial();
 
-	HWND m_hParentWnd;
 	char* m_pReadBuffer;
 	SOCKET clientSocket;
 
 	BOOL SetCommunicationTimeouts(DWORD ReadIntervalTimeout=0, DWORD ReadTotalTimeoutMultiplier=0, DWORD ReadTotalTimeoutConstant=0, DWORD WriteTotalTimeoutMultiplier=0, DWORD WriteTotalTimeoutConstant=0);
 
-	static void thrdReceive(const LPVOID lpContext);
+	static void ProcThrd(const LPVOID lpContext);
 	BOOL Send(CString sSend);
 	BOOL IsConnected();
 
 protected:
-	void EndThread();
-	BOOL Receive();
-	BOOL IsAliveThread();
+	void ThreadEnd();
+	BOOL ProcReceive();
+	BOOL ThreadIsAlive();
 
 protected:
 	DECLARE_MESSAGE_MAP()
