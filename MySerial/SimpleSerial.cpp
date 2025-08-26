@@ -140,7 +140,11 @@ BOOL CSimpleSerial::Send(CString sSend)
 	DWORD dwBytesWritten = 0;	// Sended Byte Size
 	//WriteFile(open file handle, start of data to write, number of bytes to write, number of bytes that were written, no overlapped structure)
 	if (WriteFile(m_hComm, cSend, strlen(cSend), &dwBytesWritten, NULL) == 0)
+	{
+		delete[] cSend;
 		return FALSE; // 데이터 내보내기 실패
+	}
+	delete[] cSend;
 	return TRUE;
 /*
 	HANDLE hFile = CreateFile(L"test.txt", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -224,24 +228,24 @@ BOOL CSimpleSerial::ThreadIsAlive()
 void CSimpleSerial::ThreadStop()
 {
 	m_bThreadAlive = FALSE;
-	MSG message;
-	const DWORD dwTimeOut = 1000 * 60 * 3; // 3 Minute
-	DWORD dwStartTick = GetTickCount();
-	Sleep(30);
-	while (!m_bThreadStateEnd)
-	{
-		if (GetTickCount() >= (dwStartTick + dwTimeOut))
-		{
-			AfxMessageBox(_T("WaitUntilThreadEnd() Time Out!!!", NULL, MB_OK | MB_ICONSTOP));
-			return;
-		}
-		if (::PeekMessage(&message, NULL, 0, 0, PM_REMOVE))
-		{
-			::TranslateMessage(&message);
-			::DispatchMessage(&message);
-		}
-		Sleep(30);
-	}
+	//MSG message;
+	//const DWORD dwTimeOut = 1000 * 60 * 3; // 3 Minute
+	//DWORD dwStartTick = GetTickCount();
+	//Sleep(30);
+	//while (!m_bThreadStateEnd)
+	//{
+	//	if (GetTickCount() >= (dwStartTick + dwTimeOut))
+	//	{
+	//		AfxMessageBox(_T("WaitUntilThreadEnd() Time Out!!!", NULL, MB_OK | MB_ICONSTOP));
+	//		return;
+	//	}
+	//	if (::PeekMessage(&message, NULL, 0, 0, PM_REMOVE))
+	//	{
+	//		::TranslateMessage(&message);
+	//		::DispatchMessage(&message);
+	//	}
+	//	Sleep(30);
+	//}
 }
 
 void CSimpleSerial::ThreadEnd()
